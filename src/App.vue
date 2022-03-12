@@ -125,7 +125,7 @@ li {
 }
 
 .index {
-  align-self: baseline;
+  vertical-align: top;
   font-size: 0.5em;
 }
 

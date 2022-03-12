@@ -1,7 +1,7 @@
 <template>
   <TransitionGroup name="list" tag="ul">
      <li class="song list-none text-center inline-block capitalize text-base" v-for="(entry, index) in songsForName" :key="entry.name">
-        <a class="underline pr-1" :href="entry.url">
+        <a class="underline pr-1" :href="entry.url || backupUrl + entry.name">
           <span class="name">{{entry.name}},</span>
         </a>
         <span>{{entry.artists}}</span>
@@ -19,7 +19,8 @@ export default {
   props: ['count', 'songs'],
   data() {
     return {
-      songsForName: []
+      songsForName: [],
+      backupUrl: `https://open.spotify.com/search/`
     }
   },
   mounted() {
