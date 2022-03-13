@@ -38,8 +38,8 @@ export default {
   data() {
     return {
       names: {},
-      hideDetails: true,
-      indexOfVisibleDetail: null
+      hideDetails: false,
+      indexOfVisibleDetail: 0
     }
   },
   components: {

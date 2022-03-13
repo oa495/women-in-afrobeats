@@ -78,6 +78,7 @@ export const names = [
   "Dorathy",
   "Dorcas",
   "Doris",
+  "Dotun",
   "Dupe",
   "Edith",
   "Ekaette",
