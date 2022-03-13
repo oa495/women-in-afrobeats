@@ -76,6 +76,14 @@ ul {
   line-height: 0.5em;
 }
 
+a {
+  transition: opacity 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+a:hover {
+  opacity: 0.5;
+}
+
 .list-enter-active,
 .list-leave-active {
   transition: all 0.5s ease;

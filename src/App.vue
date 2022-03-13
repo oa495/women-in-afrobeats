@@ -5,10 +5,10 @@
       <li class="list-none px-2 text-center" v-for="(entry, index) in orderedNames" :key="entry.name">
         <div class="name-info">
           <span class="index">{{index + 1}}</span>
-          <span class="name">{{entry.name}}</span>
-          <!-- <span class="count">{{entry.count}}</span> -->
-          <button v-on:click="toggleDetails(index)">
-            <img class="arrow" v-bind:class="{ shown: !hideDetails && index === indexOfVisibleDetail }" src="./assets/arrow.svg">
+          <button class="toggle" v-on:click="toggleDetails(index)">
+            <span class="name">{{entry.name}}</span>
+            <!-- <span class="count">{{entry.count}}</span> -->
+            <img class="arrow inline-block" v-bind:class="{ shown: !hideDetails && index === indexOfVisibleDetail }" src="./assets/arrow.svg">
           </button>
         </div>
 
@@ -52,7 +52,9 @@ export default {
   },
   methods: {
     toggleDetails(index) {
-      this.hideDetails = !this.hideDetails;
+      if (index === this.indexOfVisibleDetail) {
+        this.hideDetails = !this.hideDetails;
+      }
       this.indexOfVisibleDetail = index;
     }
   },
@@ -119,13 +121,17 @@ li {
   transform: rotate(180deg);
 }
 
-.name-info {
-  /* display: inline-flex; */
+.name-info, .toggle {
+  display: inline-flex;
   align-items: center;
 }
 
+.toggle:hover .arrow {
+  transform: translateY(0.2em);
+}
+
 .index {
-  vertical-align: top;
+  align-self: baseline;
   font-size: 0.5em;
 }
 
