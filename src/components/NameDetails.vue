@@ -2,7 +2,7 @@
   <TransitionGroup name="list" tag="ul">
      <li class="song list-none text-center inline-block capitalize text-base" v-for="(entry, index) in songsForName" :key="entry.name">
         <a class="underline pr-1" :href="entry.url || backupUrl + entry.name">
-          <span class="name">{{entry.name}},</span>
+          <span class="name">{{entry.name}}</span>
         </a>
         <span>{{entry.artists}}</span>
         <span v-if="index < songsForName.length-1"> //</span>
@@ -14,6 +14,19 @@
 /* eslint-disable */
 import axios from 'axios';
 
+const getAccessToken = async () => {
+  const response = await axios({
+    method: 'GET',
+    url: 'https://jumbled-jolly-kumquat.glitch.me/refresh',
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
+    },
+  });
+
+  return response.data;
+}
+
 export default {
   name: 'NameDetails',
   props: ['count', 'songs'],
@@ -23,7 +36,8 @@ export default {
       backupUrl: `https://open.spotify.com/search/`
     }
   },
-  mounted() {
+  async mounted() {
+    const { access_token } = await getAccessToken();
     this.songs.forEach(song => {
        axios({
          method: 'GET',
@@ -31,7 +45,7 @@ export default {
          headers: {
            'Accept': 'application/json',
             'Content-Type': 'application/json',
-           'Authorization': 'Bearer BQD-OFqmmUeRm9_ZNVeUAXho86svwbx4j6vKrg5YSKVur-N8VPhpy7PWHFQ1eyldLICf09eUtfqKInC6EUPCMZfzhCPPDqoJP24tt868AG0yL6uLrS7GAYilcF3HsQ4THMX0jL6PzIT4aBo'
+           'Authorization': `Bearer ${access_token}`
          }
        }
       ).then((data) => {
