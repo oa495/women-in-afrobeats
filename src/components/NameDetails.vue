@@ -36,7 +36,7 @@ export default {
       backupUrl: `https://open.spotify.com/search/`
     }
   },
-  async mounted() {
+  async created() {
     const { access_token } = await getAccessToken();
     this.songs.forEach(song => {
        axios({
