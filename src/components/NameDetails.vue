@@ -1,11 +1,18 @@
 <template>
-  <TransitionGroup name="list" tag="ul">
+  <TransitionGroup name="list" tag="ul" v-if="songsForName.length > 0">
      <li class="song list-none text-center inline-block capitalize text-base" v-for="(entry, index) in songsForName" :key="entry.name">
         <a class="underline pr-1" :href="entry.url || backupUrl + entry.name">
           <span class="name">{{entry.name}}</span>
         </a>
         <span>{{entry.artists}}</span>
         <span v-if="index < songsForName.length-1"> //</span>
+      </li>
+ </TransitionGroup>
+ <TransitionGroup name="list" tag="ul" v-if="songsForName.length === 0">
+     <li class="song list-none text-center inline-block capitalize text-base" v-for="entry in songs" :key="entry">
+        <a class="underline pr-1" :href="entry.url || backupUrl + entry">
+          <span class="name">{{entry}}</span>
+        </a>
       </li>
  </TransitionGroup>
 </template>
@@ -37,6 +44,7 @@ export default {
     }
   },
   async created() {
+    console.log(this.songs);
     const { access_token } = await getAccessToken();
     this.songs.forEach(song => {
        axios({
@@ -72,6 +80,11 @@ export default {
 }
 </script>
 <style scoped>
+
+button {
+  cursor: pointer;
+}
+
 ul {
   line-height: 0.5em;
 }

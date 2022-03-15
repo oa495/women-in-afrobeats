@@ -1,5 +1,9 @@
 <template>
-  <h1 class="text-center text-8xl mt-4">Nigerian Women's Names in Afrobeats</h1>
+  <h1 class="text-center text-8xl">Nigerian Women's Names in Afrobeats</h1>
+  <button class="text-4xl mb-4 about-button px-4" v-on:click="toggleAbout">
+    <span v-if="!isAboutVisible">?</span>
+    <span v-if="isAboutVisible">X</span>
+  </button>
   <main class="container px-8 pt-10 mx-auto lg:px-4">
     <ul class="names-container">
       <li class="list-none px-2 text-center" v-for="(entry, index) in orderedNames" :key="entry.name">
@@ -18,6 +22,16 @@
       </li>
     </ul>
   </main>
+  <footer class="about pt-4 pb-4" v-if="isAboutVisible">
+    <hr>
+    <p>After I listened to <a class="underline" href="https://www.youtube.com/watch?v=OyeCxH9wbDc">Finesse by Pheelz and BUJU</a> I was singing <i>Folake for the night </i> for days. Then I remembered Ckay singing "Folake, stay a little longer, I need a little more of your love" in <i>Jeje de Whine </i>. Then again I remembered "Folake give me love" by Tekno Miles from 2016. I started thinking, <i>What is it about Folake???</i> I had a hypothesis that Folake was the most common female name in Nigerian songs so I scraped over a thousand songs from Genius to find out. Turns out I was wrong and <strong>Omalicha is queen</strong>.</p>
+
+    <p>
+      You can add your name <a class="underline" href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/names.js">here</a> if you'd it to go through a lyrics search and you can add a song and its lyrics <a class="underline" href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/lyrics.json">here.</a>
+    </p>
+
+    <p>till next time! - <a class="underline" href="https://twitter.com/YellzHeard">yeli</a></p>
+  </footer>
 </template>
 
 <script>
@@ -28,7 +42,7 @@ import NameDetails from './components/NameDetails.vue';
 
 const nameAlternates = {
   "ifunanya": ['ifunanyam'],
-  "sade": ['folashade', 'folasade'],
+  "sade": ['</div>  folashade', 'folasade'],
   "funmi": ['olufunmi'],
   "kemi": ['oluwakemi'],
   "caro": ["caroline"]
@@ -39,7 +53,8 @@ export default {
     return {
       names: {},
       hideDetails: false,
-      indexOfVisibleDetail: 0
+      indexOfVisibleDetail: 0,
+      isAboutVisible: false
     }
   },
   components: {
@@ -56,6 +71,9 @@ export default {
         this.hideDetails = !this.hideDetails;
       }
       this.indexOfVisibleDetail = index;
+    },
+    toggleAbout() {
+      this.isAboutVisible = !this.isAboutVisible;
     }
   },
   created() {
@@ -77,7 +95,7 @@ export default {
           }
           else {
             namesAndCount[name].count += 1;
-            namesAndCount[name].songs.push(song.title);
+            namesAndCount[name].songs.push(song.title.replace('-', ' '));
           }
         }
       }
@@ -149,5 +167,27 @@ li {
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
+}
+
+.about-button {
+  bottom: 0;
+  position: fixed;
+  right: 0;
+  z-index: 100;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  border-top: 0.1em solid black;
+  align-items: center;
+}
+
+footer p {
+  max-width: 75%;
+  padding: 1rem;
 }
 </style>
