@@ -44,7 +44,7 @@ import NameDetails from './components/NameDetails.vue';
 
 const nameAlternates = {
   "ifunanya": ['ifunanyam'],
-  "sade": ['</div>  folashade', 'folasade'],
+  "sade": ['folashade', 'folasade'],
   "funmi": ['olufunmi'],
   "kemi": ['oluwakemi'],
   "caro": ["caroline"]
