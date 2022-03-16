@@ -8,7 +8,7 @@
   <main class="container px-8 pt-10 mx-auto lg:px-4">
 
     <ul class="names-container">
-      <li class="list-none px-2 text-center" v-for="(entry, index) in orderedNames" :key="entry.name">
+      <li class="list-none mt-4 px-2 text-center" v-for="(entry, index) in orderedNames" :key="entry.name">
         <div class="name-info">
           <span class="index">{{index + 1}}</span>
           <button class="toggle" v-on:click="toggleDetails(index)">

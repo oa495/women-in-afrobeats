@@ -1,5 +1,5 @@
 <template>
-  <TransitionGroup name="list" tag="ul" v-if="songsForName.length > 0">
+  <TransitionGroup class="mt-4" name="list" tag="ul" v-if="songsForName.length > 0">
      <li class="song list-none text-center inline-block capitalize text-base" v-for="(entry, index) in songsForName" :key="entry.name">
         <a class="underline pr-1" :href="entry.url || backupUrl + entry.name">
           <span class="name">{{entry.name}}</span>
