@@ -47,7 +47,8 @@ const nameAlternates = {
   "sade": ['folashade', 'folasade'],
   "funmi": ['olufunmi'],
   "kemi": ['oluwakemi'],
-  "caro": ["caroline"]
+  "caro": ["caroline"],
+  "uju": ["obianuju"],
 }
 export default {
   name: 'App',
