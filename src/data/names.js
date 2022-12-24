@@ -313,6 +313,7 @@ export const names = [
   "Ubaida",
   "Ugochi",
   "Uju",
+  "Uloma",
   "Ukamaka",
   "Veronica",
   "Victoria",
