@@ -16,7 +16,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { names, nameAlternates } from "../src/data/names.js";
+import { names, nameAlternates, wordLikeNames } from "../src/data/names.js";
 import { normalize, wordsIn, shardFor, aliasGroup } from "../src/text.js";
 
 const [, , inFile = "src/data/lyrics.json", outDir = "public/data"] = process.argv;
@@ -180,13 +180,28 @@ const compareSongs = (a, b) =>
   (meta[a].artist || "").localeCompare(meta[b].artist || "", "en", { sensitivity: "base" }) ||
   meta[a].title.localeCompare(meta[b].title, "en", { sensitivity: "base" });
 
+// Word-like names only count in songs checked by hand: { form: { name: [keys], word: [keys] } },
+// keyed by song URL (or title for the few songs without one)
+const checked = JSON.parse(fs.readFileSync("src/data/checked-songs.json", "utf8"));
+const checkKey = (id) => meta[id].url || meta[id].title;
+const unchecked = [];
+const matchesFor = (form) => {
+  if (!wordLikeNames.includes(form)) return lookup(form);
+  const { name = [], word = [] } = checked[form] || {};
+  return lookup(form).filter(([id]) => {
+    const key = checkKey(id);
+    if (!name.includes(key) && !word.includes(key)) unchecked.push(`${form}: ${key}`);
+    return name.includes(key);
+  });
+};
+
 const byName = {};
 for (const name of names) {
   const own = normalize(name);
   const forms = [own, ...aliasGroup(own).filter((form) => form !== own)];
   const entries = new Map();
   for (const form of forms) {
-    for (const [id, lines = []] of lookup(form)) {
+    for (const [id, lines = []] of matchesFor(form)) {
       if (!entries.has(id)) entries.set(id, [id, lines, form]);
     }
   }
@@ -223,6 +238,10 @@ console.log(`${Object.keys(shards).length} shards written to ${outDir}/words`);
 console.log(`${Object.keys(byName).length} names from the list found in lyrics`);
 console.log(`Total size of ${outDir}: ${kb(total)} in ${files.length} files`);
 
+if (unchecked.length) {
+  console.warn(`WARNING: ${unchecked.length} songs with word-like names not yet checked (left out until added to src/data/checked-songs.json):`);
+  unchecked.forEach((line) => console.warn(`  ${line}`));
+}
 for (const f of files.filter((f) => sizeOf(f) > FILE_WARN_BYTES)) {
   console.warn(`WARNING: ${f} is ${kb(sizeOf(f))} (over ${kb(FILE_WARN_BYTES)})`);
 }

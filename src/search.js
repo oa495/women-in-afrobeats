@@ -2,6 +2,7 @@
 // Browser-side search against the files made by scripts/build-index.mjs.
 // public/data is copied into the build, so Netlify serves it from its CDN.
 import { normalize, shardFor, aliasGroup } from './text.js';
+import { wordLikeNames } from './data/names.js';
 
 const cache = new Map();
 
@@ -44,8 +45,10 @@ export async function searchName(name) {
     return byName[listed].map(([id, lines, form]) => ({ song: songs[id], lines, form, alternate: form !== word }));
   }
 
-  // Search the typed form first so it wins when a song has several forms
-  const forms = [word, ...aliasGroup(word).filter((form) => form !== word)];
+  // Search the typed form first so it wins when a song has several forms.
+  // Word-like names only come from the hand-checked lists in by-name.json, never the raw shards.
+  const forms = [word, ...aliasGroup(word).filter((form) => form !== word)]
+    .filter((form) => !wordLikeNames.includes(form));
   const [songs, ...shards] = await Promise.all([
     getSongs(),
     ...forms.map((form) => getShard(shardFor(form))),
