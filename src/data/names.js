@@ -48,6 +48,7 @@ export const names = [
   "Bukola",
   "Chiamaka",
   "Chichi",
+  "Chidera",
   "Chidimma",
   "Chidinma",
   "Chigozie",
@@ -63,7 +64,6 @@ export const names = [
   "Dupe",
   "Ebere",
   "Edidiong",
-  "Efe",
   "Ekaette",
   "Ekene",
   "Eno",
@@ -140,7 +140,6 @@ export const names = [
   "Kikelomo",
   "Kuburat",
   "Kudirat",
-  "Kulu",
   "Ladi",
   "Lami",
   "Laraba",
@@ -271,5 +270,9 @@ export const nameAlternates = {
 }
 // Names that are also common words ("titi" is also "until"): only songs checked by hand
 // in src/data/checked-songs.json count for these forms, and searching them never falls
-// back to plain word matches. Ese, Ebi and Tawa aren't listed, so they find nothing.
-export const wordLikeNames = ["titi", "funmi", "dupe", "eno", "ese", "ebi", "tawa"];
+// back to plain word matches. Ese, Ebi, Tawa and Efe aren't listed, so they find nothing.
+export const wordLikeNames = ["titi", "funmi", "dupe", "eno", "ese", "ebi", "tawa", "efe"];
+// Contractions that contain a name but aren't it ("l'ada" is Yoruba, "at the cutlass"); never indexed
+export const notNames = { "ada": ["l'ada", "m'ada", "n'ada"] };
+// Listed names that are mostly sung as terms of endearment, with what they mean
+export const endearments = { "Omalicha": "Igbo for “beautiful one”" };

@@ -2,6 +2,7 @@
   <section class="name-view">
     <a class="back-link underline" href="#">← All names</a>
     <h2 class="name-heading text-center">{{displayName}}</h2>
+    <p class="name-message text-center" v-if="endearment"><i>A term of endearment, {{endearment}}</i></p>
 
     <p class="name-message text-center" v-if="error"><i>{{error}}</i></p>
     <p class="name-message text-center" v-else-if="results && results.length === 0"><i>No songs found for {{displayName}}.</i></p>
@@ -24,6 +25,7 @@
 import SongList from './SongList.vue';
 import { searchName, findListedName } from '../search.js';
 import { normalize, aliasGroup } from '../text.js';
+import { endearments } from '../data/names.js';
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -44,6 +46,9 @@ export default {
   computed: {
     displayName() {
       return this.listedName || capitalize(this.name.trim());
+    },
+    endearment() {
+      return endearments[this.listedName];
     },
     canSuggest() {
       // Not for names already listed, including alternate forms ("Folashade" when "Sade" is listed)

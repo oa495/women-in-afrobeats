@@ -1,44 +1,29 @@
 <template>
   <form class="search text-center" v-on:submit.prevent="emitSearch" role="search">
-    <input class="search-input text-center" :value="modelValue" v-on:input="onInput" list="name-options"
+    <input class="search-input text-center" :value="modelValue" v-on:input="onInput"
       placeholder="Search a name" aria-label="Search a name" maxlength="30" autocomplete="off">
-    <datalist id="name-options">
-      <option v-for="option in nameOptions" :key="option" :value="option"/>
-    </datalist>
     <span class="search-message block" v-if="message"><i>{{message}}</i></span>
   </form>
 </template>
 
 <script>
 /* eslint-disable */
-import { names, nameAlternates } from '../data/names.js';
-
-const DEBOUNCE_MS = 200;
-
-const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-
-// Emits `search` with the typed name (debounced), or '' when the box is cleared
+// Typing updates the model (the name list filters on it); Enter emits `search` with the typed name
 export default {
   name: 'SearchNames',
   props: ['modelValue'],
   emits: ['update:modelValue', 'search'],
   data() {
     return {
-      message: '',
-      nameOptions: [...new Set([
-        ...names,
-        ...Object.entries(nameAlternates).flatMap(([key, alternates]) => [key, ...alternates]).map(capitalize)
-      ])].sort()
+      message: ''
     }
   },
   methods: {
     onInput(event) {
+      this.message = '';
       this.$emit('update:modelValue', event.target.value);
-      clearTimeout(this.timer);
-      this.timer = setTimeout(this.emitSearch, DEBOUNCE_MS);
     },
     emitSearch() {
-      clearTimeout(this.timer);
       const input = (this.modelValue || '').trim();
       if (input && !/^[\p{L}' -]+$/u.test(input)) {
         this.message = 'Letters only, please.';

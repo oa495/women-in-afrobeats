@@ -97,6 +97,8 @@ const parseAfrikaLyricsSong = ($) => {
   const lyrics = $("div[oncontextmenu]").first();
   lyrics.find(".ad-slot, script, ins").remove();
   const lines = lyrics.find("p").toArray().flatMap((element) => linesFrom($, element));
+  // A few pages start with an "<Artist> - <Song> lyrics" header line
+  if (/\s-\s.*\blyrics$/i.test(lines[0] || "")) lines.shift();
   return { artist: decode(recording.byArtist?.name), title: decode(recording.name), lines };
 };
 

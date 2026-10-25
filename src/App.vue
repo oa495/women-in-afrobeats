@@ -1,22 +1,33 @@
 <template>
   <h1 class="text-center text-8xl"><a href="#">Nigerian Women's Names in Afrobeats</a></h1>
-      <span class="instructions text-center"><i>[Search any name, or pick one below to see the songs it's featured in]</i></span>
+  <span class="instructions text-center"><i>[Search any name, or pick one below to see the songs it's featured
+      in]</i></span>
   <button class="text-4xl mb-4 about-button px-4" v-on:click="toggleAbout">
     <span v-if="!isAboutVisible">?</span>
     <span v-if="isAboutVisible">X</span>
   </button>
   <main class="container px-8 pt-10 mx-auto lg:px-4">
-    <search-names v-model="query" v-on:search="openName"/>
+    <search-names :model-value="query" v-on:update:model-value="onType" v-on:search="openName" />
 
-    <name-view v-if="currentName" :name="currentName" :listed-names="names.map(entry => entry.name)" v-on:suggest="suggest"/>
-    <name-browser v-else :names="names"/>
+    <name-view v-if="currentName" :name="currentName" :listed-names="names.map(entry => entry.name)"
+      v-on:suggest="suggest" />
+    <name-browser v-else :names="names" :filter="query" />
   </main>
   <footer class="about pt-4 pb-4" v-if="isAboutVisible">
     <hr>
-    <p>After I listened to <a class="underline" href="https://www.youtube.com/watch?v=OyeCxH9wbDc">Finesse by Pheelz and BUJU</a> I was singing <i>"Folake for the night"</i> for days. Then I remembered Ckay singing <i>"Folake, stay a little longer, I need a little more of your love"</i> in <i>Jeje de Whine </i>. Then again I remembered <i>"Folake give me love"</i> by Tekno Miles from 2016. I started thinking, <i>What is it about Folake???</i> I had a hypothesis that Folake was the most common female name in Nigerian songs so I scraped over a thousand songs from Genius to find out. Turns out I was wrong and <strong>Omalicha is queen</strong>.</p>
+    <p>After I listened to <a class="underline" href="https://www.youtube.com/watch?v=OyeCxH9wbDc">Finesse by Pheelz and
+        BUJU</a> I was singing <i>"Folake for the night"</i> for days. Then I remembered Ckay singing <i>"Folake, stay a
+        little longer, I need a little more of your love"</i> in <i>Jeje de Whine</i>. Then again I remembered
+      <i>"Folake give me love"</i> by Tekno Miles from 2016. I started thinking, <i>What is it about Folake???</i> I had
+      a hypothesis that Folake was the most common female name in Nigerian songs so I scraped over a thousand songs from
+      Genius and AfrikaLyrics to find out. Turns out I was wrong and <strong>Omalicha is queen</strong>.
+    </p>
 
     <p>
-      You can add a name <a class="underline" href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/names.js">here</a> if you want it to go through the lyrics search and you can add a song and its lyrics <a class="underline" href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/lyrics.json">here.</a>
+      You can add a name <a class="underline"
+        href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/names.js">here</a> if you want it to go
+      through the lyrics search and you can add a song and its lyrics <a class="underline"
+        href="https://github.com/oa495/women-in-afrobeats/blob/master/src/data/lyrics.json">here.</a>
     </p>
 
     <p>till next time! - <a class="underline" href="https://twitter.com/YellzHeard">yeli</a></p>
@@ -44,7 +55,7 @@ const loadAddedNames = () => {
 const saveAddedName = (name) => {
   try {
     localStorage.setItem(ADDED_NAMES_KEY, JSON.stringify([...loadAddedNames(), name]));
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // Sends a suggested name to Netlify Forms for review (see the hidden form in public/index.html)
@@ -58,7 +69,7 @@ const suggestName = (name, songCount, botField) => {
       'songs': songCount,
       'bot-field': botField
     }).toString()
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 const nameFromHash = () => decodeURIComponent(location.hash.slice(1)).replace(/-/g, ' ').trim();
@@ -82,7 +93,12 @@ export default {
     toggleAbout() {
       this.isAboutVisible = !this.isAboutVisible;
     },
-    // Typing replaces the current history entry so Back isn't flooded with partial names
+    // Typing filters the name list, leaving a name's page if one is open
+    onType(value) {
+      this.query = value;
+      if (this.currentName) this.openName('');
+    },
+    // Replaces the current history entry so Back isn't flooded with searched names
     openName(name) {
       history.replaceState(null, '', name ? '#' + toHash(name) : location.pathname + location.search);
       this.currentName = name;
@@ -141,6 +157,7 @@ li {
 .name {
   padding-left: 0.25em;
 }
+
 .about-button {
   bottom: 0;
   position: fixed;

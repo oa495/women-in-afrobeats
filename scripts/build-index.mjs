@@ -16,7 +16,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { names, nameAlternates, wordLikeNames } from "../src/data/names.js";
+import { names, nameAlternates, wordLikeNames, notNames } from "../src/data/names.js";
 import { normalize, wordsIn, shardFor, aliasGroup } from "../src/text.js";
 
 const [, , inFile = "src/data/lyrics.json", outDir = "public/data"] = process.argv;
@@ -77,6 +77,10 @@ const parseSong = (s) => {
 
 const songKey = (s) => slug((s.artist ? s.artist + " " : "") + s.title);
 
+// "L'ada," -> "l'ada", to compare a token with the contractions in notNames
+const contraction = (token) => normalize(token).replace(/[’‘`]/g, "'").replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
+const isNotName = (word, token) => (notNames[word] || []).includes(contraction(token));
+
 const raw = JSON.parse(fs.readFileSync(inFile, "utf8"));
 
 // Drop duplicate songs (the same song can come from both Genius and AfrikaLyrics).
@@ -118,6 +122,7 @@ const meta = songs.map((s, id) => {
   lines.forEach((tokens, li) => {
     tokens.forEach((token, ti) => {
       for (const word of wordsIn(token)) {
+        if (isNotName(word, token)) continue;
         const used = lineTexts.get(word) || lineTexts.set(word, new Set()).get(word);
         if (used.size >= LINES_PER_SONG) continue;
         // Compare lines as they'd be published, ignoring case and punctuation
