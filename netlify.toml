@@ -7,3 +7,9 @@
   NODE_VERSION = "22"
   # Vue CLI 4 (webpack 4) needs this on Node 17+
   NODE_OPTIONS = "--openssl-legacy-provider"
+
+[dev]
+  # `netlify dev` runs the Vue dev server and proxies it, with functions, on port 8888
+  command = "yarn serve"
+  targetPort = 8080
+  framework = "#custom"
