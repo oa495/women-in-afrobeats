@@ -1,28 +1,15 @@
 <template>
-  <h1 class="text-center text-8xl">Nigerian Women's Names in Afrobeats</h1>
-      <span class="instructions text-center"><i>[Click on the name to see the songs it's featured in]</i></span>
+  <h1 class="text-center text-8xl"><a href="#">Nigerian Women's Names in Afrobeats</a></h1>
+      <span class="instructions text-center"><i>[Search any name, or pick one below to see the songs it's featured in]</i></span>
   <button class="text-4xl mb-4 about-button px-4" v-on:click="toggleAbout">
     <span v-if="!isAboutVisible">?</span>
     <span v-if="isAboutVisible">X</span>
   </button>
   <main class="container px-8 pt-10 mx-auto lg:px-4">
+    <search-names v-model="query" v-on:search="openName"/>
 
-    <ul class="names-container">
-      <li class="list-none mt-4 px-2 text-center" v-for="(entry, index) in orderedNames" :key="entry.name">
-        <div class="name-info">
-          <span class="index">{{index + 1}}</span>
-          <button class="toggle" v-on:click="toggleDetails(index)">
-            <span class="name">{{entry.name}}</span>
-            <!-- <span class="count">{{entry.count}}</span> -->
-            <img class="arrow inline-block" v-bind:class="{ shown: !hideDetails && index === indexOfVisibleDetail }" src="./assets/arrow.svg">
-          </button>
-        </div>
-
-        <transition name="fade">
-          <name-details v-if="!hideDetails && index === indexOfVisibleDetail" :songs="entry.songs"/>
-        </transition>
-      </li>
-    </ul>
+    <name-view v-if="currentName" :name="currentName" :listed-names="names.map(entry => entry.name)" v-on:suggest="suggest"/>
+    <name-browser v-else :names="names"/>
   </main>
   <footer class="about pt-4 pb-4" v-if="isAboutVisible">
     <hr>
@@ -38,77 +25,94 @@
 
 <script>
 /* eslint-disable */
-import { names } from './data/names.js';
-import lyrics from './data/lyrics.json';
-import NameDetails from './components/NameDetails.vue';
+import SearchNames from './components/SearchNames.vue';
+import NameBrowser, { toHash } from './components/NameBrowser.vue';
+import NameView from './components/NameView.vue';
+import { getByName, searchName } from './search.js';
 
-const nameAlternates = {
-  "ifunanya": ['ifunanyam'],
-  "sade": ['folashade', 'folasade'],
-  "funmi": ['olufunmi'],
-  "kemi": ['oluwakemi'],
-  "caro": ["caroline"],
-  "uju": ["obianuju"],
+const ADDED_NAMES_KEY = 'added-names';
+
+// Names visitors suggest are only kept in their own browser until they're added to names.js
+const loadAddedNames = () => {
+  try {
+    return JSON.parse(localStorage.getItem(ADDED_NAMES_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
 }
+
+const saveAddedName = (name) => {
+  try {
+    localStorage.setItem(ADDED_NAMES_KEY, JSON.stringify([...loadAddedNames(), name]));
+  } catch (e) {}
+}
+
+// Sends a suggested name to Netlify Forms for review (see the hidden form in public/index.html)
+const suggestName = (name, songCount, botField) => {
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      'form-name': 'suggest-name',
+      'name': name,
+      'songs': songCount,
+      'bot-field': botField
+    }).toString()
+  }).catch(() => {});
+}
+
+const nameFromHash = () => decodeURIComponent(location.hash.slice(1)).replace(/-/g, ' ').trim();
+
 export default {
   name: 'App',
   data() {
     return {
-      names: {},
-      hideDetails: true,
-      indexOfVisibleDetail: null,
+      names: [],
+      query: '',
+      currentName: nameFromHash(),
       isAboutVisible: false
     }
   },
   components: {
-    NameDetails
-  },
-  computed: {
-    orderedNames() {
-      return this.names.sort((a, b) => { return b.count - a.count; });
-    }
+    SearchNames,
+    NameBrowser,
+    NameView
   },
   methods: {
-    toggleDetails(index) {
-      if (index === this.indexOfVisibleDetail) {
-        this.hideDetails = !this.hideDetails;
-      }
-      this.indexOfVisibleDetail = index;
-    },
     toggleAbout() {
       this.isAboutVisible = !this.isAboutVisible;
+    },
+    // Typing replaces the current history entry so Back isn't flooded with partial names
+    openName(name) {
+      history.replaceState(null, '', name ? '#' + toHash(name) : location.pathname + location.search);
+      this.currentName = name;
+    },
+    onHashChange() {
+      this.currentName = nameFromHash();
+      this.query = this.currentName;
+      window.scrollTo(0, 0);
+    },
+    suggest({ name, count, botField }) {
+      this.names.push({ name, count, pending: true });
+      saveAddedName(name);
+      suggestName(name, count, botField);
     }
   },
-  created() {
-    const namesAndCount = {};
+  async created() {
+    this.query = this.currentName;
+    window.addEventListener('hashchange', this.onHashChange);
 
-    names.forEach(name => {
-      for (const song of lyrics) {
-        const nameRegex = new RegExp(`\\b${name}\\b`, 'i');
-        let nameAlternatesRegex = undefined;
-        if (nameAlternates[name.toLowerCase()]) {
-          nameAlternatesRegex = new RegExp(`\\b${nameAlternates[name.toLowerCase()].join('|')}\\b`, 'i');
-        }
-        if (song.lyrics.match(nameRegex) || (nameAlternatesRegex && song.lyrics.match(nameAlternatesRegex))) {
-          if (!namesAndCount[name]) {
-              namesAndCount[name] = {
-                count: 1,
-                songs: [song.title]
-              };
-          }
-          else {
-            namesAndCount[name].count += 1;
-            namesAndCount[name].songs.push(song.title.replace('-', ' '));
-          }
-        }
-      }
-    });
-
-    this.names = Object.keys(namesAndCount).map(entry => {
-      const entryDetails = namesAndCount[entry];
-      entryDetails['name'] = entry;
-      return entryDetails;
-    });
+    const byName = await getByName();
+    const names = Object.entries(byName).map(([name, songs]) => ({ name, count: songs.length }));
+    for (const name of loadAddedNames()) {
+      if (names.some(entry => entry.name.toLowerCase() === name.toLowerCase())) continue;
+      const results = await searchName(name).catch(() => []);
+      if (results.length) names.push({ name, count: results.length, pending: true });
+    }
+    this.names = names;
+  },
+  unmounted() {
+    window.removeEventListener('hashchange', this.onHashChange);
   }
 }
 </script>
@@ -134,44 +138,9 @@ li {
   text-transform: uppercase;
 }
 
-.arrow, .arrow.shown {
-  transition: all 1s ease-in-out;
-}
-
-.arrow.shown {
-  transform: rotate(180deg);
-}
-
-.name-info, .toggle {
-  display: inline-flex;
-  align-items: center;
-}
-
-.toggle:hover .arrow {
-  transform: translateY(0.2em);
-}
-
-.index {
-  align-self: baseline;
-  font-size: 0.5em;
-}
-
 .name {
   padding-left: 0.25em;
 }
-
-.count {
-  border: 1px solid black;
-  padding: 0.25em;
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s ease-in-out;
-}
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
 .about-button {
   bottom: 0;
   position: fixed;
@@ -196,5 +165,12 @@ footer p {
 
 .instructions {
   display: block;
+}
+
+.pending {
+  font-size: 0.4em;
+  text-transform: none;
+  opacity: 0.6;
+  padding-left: 0.5em;
 }
 </style>

@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build:index": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-index.mjs src/data/lyrics.json public/data",
+    "scrape": "node scripts/scrape.mjs && yarn build:index",
+    "serve": "yarn build:index && NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
+    "build": "yarn build:index && vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -20,6 +22,7 @@
     "@vue/compiler-sfc": "^3.0.0",
     "autoprefixer": "^9",
     "babel-eslint": "^10.1.0",
+    "cheerio": "1.0.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0",
     "postcss": "^7",

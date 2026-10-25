@@ -9,9 +9,9 @@
       </li>
  </TransitionGroup>
  <TransitionGroup name="list" tag="ul" v-if="songsForName.length === 0">
-     <li class="song list-none text-center inline-block capitalize text-base" v-for="entry in songs" :key="entry">
-        <a class="underline pr-1" :href="entry.url || backupUrl + entry">
-          <span class="name">{{entry}}</span>
+     <li class="song list-none text-center inline-block capitalize text-base" v-for="entry in songs" :key="entry.id">
+        <a class="underline pr-1" :href="entry.url || backupUrl + trackQuery(entry)">
+          <span class="name">{{trackQuery(entry)}}</span>
         </a>
       </li>
  </TransitionGroup>
@@ -19,20 +19,7 @@
 
 <script>
 /* eslint-disable */
-import axios from 'axios';
-
-const getAccessToken = async () => {
-  const response = await axios({
-    method: 'GET',
-    url: 'https://jumbled-jolly-kumquat.glitch.me/refresh',
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
-    },
-  });
-
-  return response.data;
-}
+import { getTrack, trackQuery } from '../spotify.js';
 
 export default {
   name: 'NameDetails',
@@ -43,38 +30,16 @@ export default {
       backupUrl: `https://open.spotify.com/search/`
     }
   },
-  async created() {
-    console.log(this.songs);
-    const { access_token } = await getAccessToken();
+  methods: {
+    trackQuery
+  },
+  created() {
     this.songs.forEach(song => {
-       axios({
-         method: 'GET',
-         url: `https://api.spotify.com/v1/search?query=${song.replaceAll('-', ' ')}&type=track&locale=en&offset=0&limit=1`,
-         headers: {
-           'Accept': 'application/json',
-            'Content-Type': 'application/json',
-           'Authorization': `Bearer ${access_token}`
-         }
-       }
-      ).then((data) => {
-        let songsDetails = {};
-        if (data) {
-          const tracks = data?.data?.tracks?.items;
-          if (tracks.length > 0) {
-            const song = tracks[0];
-            songsDetails.name = song.name;
-            songsDetails.url = song.external_urls.spotify;
-            const artists = song.artists.map(artist => {
-              return artist.name;
-            });
-            songsDetails.artists = artists.join(', ');
-          }
-        }
-        if (Object.keys(songsDetails).length > 0) this.songsForName.push(songsDetails);
+      getTrack(trackQuery(song)).then(track => {
+        if (track) this.songsForName.push(track);
       }).catch(() => {
-        this.songsForName.push({ name:
-        song.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ') });
-      })
+        this.songsForName.push({ name: song.title, artists: song.artist, url: song.url });
+      });
     });
   }
 }

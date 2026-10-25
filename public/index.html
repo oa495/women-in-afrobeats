@@ -15,6 +15,12 @@
         Please enable it to continue.</strong>
   </noscript>
   <div id="app"></div>
+  <!-- Lets Netlify detect the name suggestion form at build time; the app submits it from App.vue -->
+  <form name="suggest-name" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input name="name">
+    <input name="songs">
+    <input name="bot-field">
+  </form>
   <!-- built files will be auto injected -->
 </body>
 

@@ -1,0 +1,9 @@
+[build]
+  # Rebuilds the lyrics search index (public/data) on every deploy, then the site
+  command = "yarn build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Vue CLI 4 (webpack 4) needs this on Node 17+
+  NODE_OPTIONS = "--openssl-legacy-provider"
