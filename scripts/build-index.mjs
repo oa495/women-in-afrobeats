@@ -69,8 +69,9 @@ const parseOldSong = ({ title, lyrics }) => {
 };
 
 const parseSong = (s) => {
-  const { song, text } = s.artist && s.url
-    ? { song: { title: s.title, artist: s.artist, url: s.url }, text: s.lyrics }
+  // Entries with an artist are used as given (a few older ones were split by hand and have no url)
+  const { song, text } = s.artist
+    ? { song: { title: s.title, artist: s.artist, ...(s.url && { url: s.url }) }, text: s.lyrics }
     : parseOldSong(s);
   return { song, text: text.replace(/\d*\s*Embed\s*$/, "") };
 };
@@ -139,6 +140,18 @@ const meta = songs.map((s, id) => {
   occurrences.push(found);
   return { id, ...song };
 });
+
+// AfrikaLyrics spells artists in capitals ("OLAMIDE"); use the same artist's spelling
+// from another song when there is one. The browser also uses Spotify's spelling when it can.
+const isCaps = (s) => s === s.toUpperCase() && /\p{Lu}{2}/u.test(s);
+const spellings = new Map(meta.filter((m) => m.artist && !isCaps(m.artist)).map((m) => [slug(m.artist), m.artist]));
+let respelled = 0;
+for (const m of meta) {
+  if (m.artist && isCaps(m.artist) && spellings.has(slug(m.artist))) {
+    m.artist = spellings.get(slug(m.artist));
+    respelled++;
+  }
+}
 
 const nameWords = new Set([
   ...names.flatMap(wordsIn),
@@ -237,6 +250,7 @@ const publishedWords = published.reduce((sum, lines) => sum + lines.reduce((n, f
 
 console.log(`${raw.length} songs in, ${songs.length} after removing duplicates`);
 console.log(`${headersStripped} "<Song> Lyrics" headers stripped from older entries`);
+console.log(`${respelled} capitalized artist names respelled from other songs`);
 console.log(`${songCount.size} words indexed, ${entriesWithLines} word/song matches with lyric lines`);
 console.log(`Published lyric lines cover ~${Math.round((100 * publishedWords) / lyricWords)}% of all lyric words (lines kept for names and words in <= ${LINES_MAX_SONGS} songs)`);
 console.log(`${Object.keys(shards).length} shards written to ${outDir}/words`);

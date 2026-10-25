@@ -6,6 +6,7 @@
     "build:index": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-index.mjs src/data/lyrics.json public/data",
     "scrape": "node scripts/scrape.mjs && yarn build:index",
     "serve": "yarn build:index && NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve --host ::",
+    "serve:netlify": "yarn build:index & NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve --host ::",
     "build": "yarn build:index && vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

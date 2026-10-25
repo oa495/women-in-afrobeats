@@ -1,8 +1,8 @@
 <template>
   <ul class="songs">
     <li class="song-result list-none" v-for="result in results" :key="result.song.id">
-      <a class="underline" v-if="result.song.url" :href="result.song.url" target="_blank" rel="noopener">{{songLabel(result.song)}}</a>
-      <span v-else>{{songLabel(result.song)}}</span>
+      <a class="underline" :href="songLink(result.song)" target="_blank" rel="noopener">{{songLabel(result.song)}}</a>
+      <a class="lyrics-link" v-if="tracks[result.song.id] && result.song.url" :href="result.song.url" target="_blank" rel="noopener">lyrics</a>
       <span class="matched" v-if="result.alternate"><i>matched “{{capitalize(result.form)}}”</i></span>
       <span class="lyric-line block" v-for="(line, i) in result.lines" :key="i">
         <template v-for="(part, j) in highlight(line, result.form)" :key="j">
@@ -17,14 +17,36 @@
 <script>
 /* eslint-disable */
 import { wordsIn } from '../text.js';
+import { findTrack, displaySong, spotifySearchUrl } from '../spotify.js';
 
 export default {
   name: 'SongList',
   props: ['results'],
+  data() {
+    return {
+      tracks: {} // song id -> matching Spotify track
+    }
+  },
+  watch: {
+    // Each song links to Spotify once its track is found, else to its lyrics page or a Spotify search
+    results: {
+      immediate: true,
+      handler(results) {
+        for (const { song } of results || []) {
+          if (song.id in this.tracks) continue;
+          findTrack(song).then(track => { this.tracks[song.id] = track; }).catch(() => {});
+        }
+      }
+    }
+  },
   methods: {
     capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
+    songLink(song) {
+      return this.tracks[song.id]?.url || song.url || spotifySearchUrl(song);
+    },
     songLabel(song) {
-      return song.artist ? `${song.artist} – ${song.title}` : song.title;
+      const { artist, title } = displaySong(song, this.tracks[song.id]);
+      return artist ? `${artist} – ${title}` : title;
     },
     // Splits a line into parts, flagging the words that matched; only their letters get marked
     highlight(line, form) {
@@ -53,9 +75,15 @@ export default {
   text-align: center;
 }
 
+.lyrics-link,
 .matched {
   opacity: 0.6;
   padding-left: 0.5em;
+}
+
+.lyrics-link {
+  font-size: 0.85em;
+  text-decoration: underline;
 }
 
 .lyric-line {
